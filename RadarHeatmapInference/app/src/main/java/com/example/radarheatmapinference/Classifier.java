@@ -135,7 +135,7 @@ public class Classifier {
         }
         return ClassifiedResult;
     }
-
+    ///////
     protected TensorOperator getPostprocessNormalizeOp(){
         return new NormalizeOp(PROBABILITY_MAEN, PROBABILITY_STD);
     }
