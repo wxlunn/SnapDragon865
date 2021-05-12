@@ -5,6 +5,7 @@
     android:id="@+id/imageview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:scrollbarTrackVertical="@drawable/basement_11111"
     tools:context=".MainActivity">
 
     <ImageView
@@ -15,7 +16,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/test110101" />
+        app:srcCompat="@drawable/basement_00010" />
 
     <TextView
         android:id="@+id/textView"

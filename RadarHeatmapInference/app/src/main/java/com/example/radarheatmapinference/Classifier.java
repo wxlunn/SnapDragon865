@@ -26,7 +26,8 @@ public class Classifier {
 
     private static final String LOG_TAG = Classifier.class.getSimpleName();
 
-    private static final String MODEL_NAME = "cnn.tflite";
+    //private static final String MODEL_NAME = "transfer_cnn.tflite";
+    private static final String MODEL_NAME = "transfer_cnn.tflite";
 
     private static final String LABEL_NAME = "label.txt";
 
@@ -51,23 +52,17 @@ public class Classifier {
 
     private static final float IMAGE_MEAN = 0f;
     private static final float IMAGE_STD = 255f;
-    private final int imageSizeBatch;
-    private final int imageSizeX;
-    private final int imageSizeY;
-    private final int imageSizeChannel;
-    private final int outputSizeX;
-    private final int outputSizeY;
     int[] imageshape;
     int[] probabilityShape;
     long costTimeForInference;
     DataType imageDataType;
     DataType probabilityDataType;
 
-    public Classifier(Activity activity,boolean gpu) throws IOException{
+    public Classifier(Activity activity, boolean gpu) throws IOException {
 
         tfliteModel = loadModelFile(activity);
         labels = loadLabels(activity);
-        if(gpu){
+        if (gpu) {
             gpuDelegate = new GpuDelegate();
             options.addDelegate(gpuDelegate);
         }
@@ -76,21 +71,13 @@ public class Classifier {
 
         int imageTensorIndex = 0;
         imageshape = tflite.getInputTensor(imageTensorIndex).shape();
-        imageSizeBatch = imageshape[0];
-        imageSizeY = imageshape[1];
-        imageSizeX = imageshape[2];
-        imageSizeChannel = imageshape[3];
         imageshape[0] = 1;
-        //DataType imageDataType = tflite.getInputTensor(imageTensorIndex).dataType();
         imageDataType = tflite.getInputTensor(imageTensorIndex).dataType();
         //tflite.resizeInput(imageTensorIndex, new int[]{1, 256, 86, 3});
         tflite.resizeInput(imageTensorIndex, imageshape);
 
         int probabilityTensorIndex = 0;
         probabilityShape = tflite.getInputTensor(probabilityTensorIndex).shape();
-        outputSizeX = probabilityShape[0];
-        outputSizeY = probabilityShape[1];
-        //probabilityShape[0] = 1;
         probabilityDataType = tflite.getOutputTensor(probabilityTensorIndex).dataType();
 
         inputImageBuffer = new TensorImage(imageDataType);
@@ -99,16 +86,16 @@ public class Classifier {
         probabilityProcessor = new TensorProcessor.Builder().add(getPostprocessNormalizeOp()).build();
     }
 
+
     public String classify(Bitmap bitmap){
         costTimeForInference = 0;
         inputImageBuffer.load(bitmap);
-        //
         ImageProcessor imageProcessor =
                 new ImageProcessor.Builder()
-                .add(getPreprocessNormalizeOp())
-                .build();
+                    .add(new ResizeOp(86, 256 ,ResizeOp.ResizeMethod.BILINEAR))
+                    .add(getPreprocessNormalizeOp())
+                    .build();
         inputImageBuffer = imageProcessor.process(inputImageBuffer);
-        //
         long startTimeForInference = SystemClock.uptimeMillis();
         tflite.run(inputImageBuffer.getBuffer(), outputProbabilityBuffer.getBuffer().rewind());
         costTimeForInference = SystemClock.uptimeMillis() - startTimeForInference;
@@ -135,7 +122,7 @@ public class Classifier {
         }
         return ClassifiedResult;
     }
-    ///////
+
     protected TensorOperator getPostprocessNormalizeOp(){
         return new NormalizeOp(PROBABILITY_MAEN, PROBABILITY_STD);
     }
@@ -159,22 +146,22 @@ public class Classifier {
         return LABEL_NAME;
     }
 
-    public int getImageSizeBatch(){return imageSizeBatch;}
-    public int getImageSizeChannel(){return imageSizeChannel;};
-    public int getImageSizeX(){return imageSizeX;};
-    public int getImageSizeY(){return imageSizeY;};
-    public int getOutputSizeX(){return outputSizeX;};
-    public int getOutputSizeY(){return outputSizeY;};
-    public String getshape(){
-        String size = "";
-        for(int i = 0;i<probabilityShape.length;i++){
-            size = size + probabilityShape[i] + " ";
-        }
-        return size;
-    }
+    //public int getImageSizeBatch(){return imageSizeBatch;}
+    //public int getImageSizeChannel(){return imageSizeChannel;};
+    //public int getImageSizeX(){return imageSizeX;};
+    //public int getImageSizeY(){return imageSizeY;};
+    //public int getOutputSizeX(){return outputSizeX;};
+    //public int getOutputSizez(){return outputSizeX;};
+    //public String getshape(){
+    //    String size = "";
+    //for(int i = 0;i<probabilityShape.length;i++){
+    //        size = size + probabilityShape[i] + " ";
+    //    }
+    //    return size;
+    //}
     public long getCostTime(){
         return costTimeForInference;
     }
 
-    public String getDtype(){return imageDataType.name() + probabilityDataType.name();}
+    //public String getDtype(){return imageDataType.name() + probabilityDataType.name();}
 }

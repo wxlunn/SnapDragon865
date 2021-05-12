@@ -10,5 +10,6 @@
         android:layout_height="48dp"
         android:gravity="center_vertical"
         android:text="TextView"
+        android:textAlignment="center"
         android:textSize="24sp" />
 </LinearLayout>
